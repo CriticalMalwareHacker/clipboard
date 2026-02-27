@@ -1,118 +1,114 @@
 import { createFileRoute } from '@tanstack/react-router'
-import {
-  Zap,
-  Server,
-  Route as RouteIcon,
-  Shield,
-  Waves,
-  Sparkles,
-} from 'lucide-react'
+import { useState } from 'react'
+import { Copy, Check, Clipboard, Trash2 } from 'lucide-react'
+import TextareaWithFloatingLabel from '@/components/shadcn-space/textarea/textarea-07'
 
-export const Route = createFileRoute('/')({ component: App })
+export const Route = createFileRoute('/')({ component: ClipboardApp })
 
-function App() {
-  const features = [
-    {
-      icon: <Zap className="w-12 h-12 text-cyan-400" />,
-      title: 'Powerful Server Functions',
-      description:
-        'Write server-side code that seamlessly integrates with your client components. Type-safe, secure, and simple.',
-    },
-    {
-      icon: <Server className="w-12 h-12 text-cyan-400" />,
-      title: 'Flexible Server Side Rendering',
-      description:
-        'Full-document SSR, streaming, and progressive enhancement out of the box. Control exactly what renders where.',
-    },
-    {
-      icon: <RouteIcon className="w-12 h-12 text-cyan-400" />,
-      title: 'API Routes',
-      description:
-        'Build type-safe API endpoints alongside your application. No separate backend needed.',
-    },
-    {
-      icon: <Shield className="w-12 h-12 text-cyan-400" />,
-      title: 'Strongly Typed Everything',
-      description:
-        'End-to-end type safety from server to client. Catch errors before they reach production.',
-    },
-    {
-      icon: <Waves className="w-12 h-12 text-cyan-400" />,
-      title: 'Full Streaming Support',
-      description:
-        'Stream data from server to client progressively. Perfect for AI applications and real-time updates.',
-    },
-    {
-      icon: <Sparkles className="w-12 h-12 text-cyan-400" />,
-      title: 'Next Generation Ready',
-      description:
-        'Built from the ground up for modern web applications. Deploy anywhere JavaScript runs.',
-    },
-  ]
+function ClipboardApp() {
+  const [text, setText] = useState('')
+  const [copied, setCopied] = useState(false)
+
+  const handleCopy = async () => {
+    if (text.trim()) {
+      await navigator.clipboard.writeText(text)
+      setCopied(true)
+      setTimeout(() => setCopied(false), 2000)
+    }
+  }
+
+  const handlePaste = async () => {
+    try {
+      const clipboardText = await navigator.clipboard.readText()
+      setText(clipboardText)
+    } catch (err) {
+      console.error('Failed to read clipboard:', err)
+    }
+  }
+
+  const handleClear = () => {
+    setText('')
+  }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-slate-900 via-slate-800 to-slate-900">
-      <section className="relative py-20 px-6 text-center overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-r from-cyan-500/10 via-blue-500/10 to-purple-500/10"></div>
-        <div className="relative max-w-5xl mx-auto">
-          <div className="flex items-center justify-center gap-6 mb-6">
-            <img
-              src="/tanstack-circle-logo.png"
-              alt="TanStack Logo"
-              className="w-24 h-24 md:w-32 md:h-32"
-            />
-            <h1 className="text-6xl md:text-7xl font-black text-white [letter-spacing:-0.08em]">
-              <span className="text-gray-300">TANSTACK</span>{' '}
-              <span className="bg-gradient-to-r from-cyan-400 to-blue-400 bg-clip-text text-transparent">
-                START
-              </span>
-            </h1>
+    <div className="min-h-screen bg-gray-100 flex items-center justify-center p-6">
+      <div className="w-full max-w-2xl">
+        {/* Header */}
+        <div className="text-center mb-8">
+          <div className="inline-flex items-center justify-center w-16 h-16 bg-gray-800 rounded-2xl mb-4 shadow-lg shadow-gray-400/30">
+            <Clipboard className="w-8 h-8 text-white" />
           </div>
-          <p className="text-2xl md:text-3xl text-gray-300 mb-4 font-light">
-            The framework for next generation AI applications
-          </p>
-          <p className="text-lg text-gray-400 max-w-3xl mx-auto mb-8">
-            Full-stack framework powered by TanStack Router for React and Solid.
-            Build modern applications with server functions, streaming, and type
-            safety.
-          </p>
-          <div className="flex flex-col items-center gap-4">
-            <a
-              href="https://tanstack.com/start"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="px-8 py-3 bg-cyan-500 hover:bg-cyan-600 text-white font-semibold rounded-lg transition-colors shadow-lg shadow-cyan-500/50"
-            >
-              Documentation
-            </a>
-            <p className="text-gray-400 text-sm mt-2">
-              Begin your TanStack Start journey by editing{' '}
-              <code className="px-2 py-1 bg-slate-700 rounded text-cyan-400">
-                /src/routes/index.tsx
-              </code>
-            </p>
-          </div>
+          <h1 className="text-4xl font-bold text-gray-800 mb-2">Clipboard</h1>
+          <p className="text-gray-500">Quick copy &amp; paste text storage</p>
         </div>
-      </section>
 
-      <section className="py-16 px-6 max-w-7xl mx-auto">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {features.map((feature, index) => (
-            <div
-              key={index}
-              className="bg-slate-800/50 backdrop-blur-sm border border-slate-700 rounded-xl p-6 hover:border-cyan-500/50 transition-all duration-300 hover:shadow-lg hover:shadow-cyan-500/10"
+        {/* Main Card */}
+        <div className="bg-white border border-gray-200 rounded-2xl p-6 shadow-xl">
+          {/* Floating Label Textarea */}
+          <TextareaWithFloatingLabel
+            value={text}
+            onChange={(e) => setText(e.target.value)}
+            label="Your text"
+          />
+
+          {/* Character Count */}
+          <div className="flex justify-between items-center mt-3 mb-4 text-sm text-gray-400">
+            <span>{text.length} characters</span>
+            <span>{text.trim().split(/\s+/).filter(Boolean).length} words</span>
+          </div>
+
+          {/* Action Buttons */}
+          <div className="flex flex-wrap gap-3">
+            <button
+              onClick={handleCopy}
+              disabled={!text.trim()}
+              className={`flex-1 min-w-[140px] flex items-center justify-center gap-2 py-3 px-6 rounded-xl font-semibold transition-all duration-300 ${copied
+                  ? 'bg-green-500 text-white shadow-lg shadow-green-300/40'
+                  : text.trim()
+                    ? 'bg-gray-800 text-white hover:bg-gray-700 hover:shadow-lg hover:shadow-gray-400/30 hover:scale-[1.02]'
+                    : 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                }`}
             >
-              <div className="mb-4">{feature.icon}</div>
-              <h3 className="text-xl font-semibold text-white mb-3">
-                {feature.title}
-              </h3>
-              <p className="text-gray-400 leading-relaxed">
-                {feature.description}
-              </p>
-            </div>
-          ))}
+              {copied ? (
+                <>
+                  <Check className="w-5 h-5" />
+                  Copied!
+                </>
+              ) : (
+                <>
+                  <Copy className="w-5 h-5" />
+                  Copy
+                </>
+              )}
+            </button>
+
+            <button
+              onClick={handlePaste}
+              className="flex-1 min-w-[140px] flex items-center justify-center gap-2 py-3 px-6 bg-gray-100 hover:bg-gray-200 text-gray-700 border border-gray-200 rounded-xl font-semibold transition-all duration-300 hover:scale-[1.02]"
+            >
+              <Clipboard className="w-5 h-5" />
+              Paste
+            </button>
+
+            <button
+              onClick={handleClear}
+              disabled={!text}
+              className={`flex items-center justify-center gap-2 py-3 px-6 rounded-xl font-semibold transition-all duration-300 ${text
+                  ? 'bg-red-50 text-red-500 border border-red-200 hover:bg-red-100 hover:scale-[1.02]'
+                  : 'bg-gray-100 text-gray-300 cursor-not-allowed'
+                }`}
+            >
+              <Trash2 className="w-5 h-5" />
+              Clear
+            </button>
+          </div>
         </div>
-      </section>
+
+        {/* Footer */}
+        <p className="text-center text-gray-400 text-sm mt-6">
+          Your text stays in your browser. Nothing is sent to any server.
+        </p>
+      </div>
     </div>
   )
 }
