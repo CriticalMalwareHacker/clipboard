@@ -1,301 +1,320 @@
-Welcome to your new TanStack app! 
+# 📋 Clipboard - Real-time Shared Clipboard
 
-# Getting Started
+A modern, real-time clipboard sharing application that lets you instantly share text across devices and with others through shareable rooms. Built with cutting-edge web technologies and deployed on Google Cloud Run.
 
-To run this application:
+## ✨ Features
+
+- **Quick Clipboard**: Copy, paste, and manage text instantly
+- **Shared Rooms**: Create rooms with unique 6-character invite codes
+- **Real-time Sync**: Changes sync instantly across all connected users
+- **Easy Sharing**: Share via invite codes or direct links
+- **Modern UI**: Clean, responsive interface built with shadcn/ui
+- **Cloud-Native**: Fully Dockerized and optimized for Google Cloud Run
+
+## 🚀 Tech Stack
+
+### Frontend
+
+- **[React 19](https://react.dev/)** - Latest React with modern features
+- **[TanStack Router](https://tanstack.com/router)** - Type-safe file-based routing
+- **[TanStack Start](https://tanstack.com/start)** - Full-stack React framework with Nitro
+- **[Tailwind CSS 4](https://tailwindcss.com/)** - Utility-first styling
+- **[shadcn/ui](https://ui.shadcn.com/)** - High-quality component library
+- **[Lucide Icons](https://lucide.dev/)** - Beautiful icon set
+
+### Backend & Database
+
+- **[Convex](https://convex.dev/)** - Real-time backend with reactive queries
+- **Real-time subscriptions** - Instant updates across all clients
+- **Serverless database** - No infrastructure to manage
+
+### Build & Tooling
+
+- **[Vite](https://vitejs.dev/)** - Lightning-fast build tool
+- **[TypeScript](https://www.typescriptlang.org/)** - Type safety throughout
+- **[pnpm](https://pnpm.io/)** - Fast, disk space efficient package manager
+- **[Vitest](https://vitest.dev/)** - Unit testing framework
+- **[ESLint](https://eslint.org/)** & **[Prettier](https://prettier.io/)** - Code quality & formatting
+
+### Deployment
+
+- **Docker** - Multi-stage optimized builds
+- **Google Cloud Run** - Serverless container deployment
+- **Nitro** - Production-ready server with optimized bundling
+
+## 📦 Getting Started
+
+### Prerequisites
+
+- Node.js 20 or later
+- pnpm 8 or later
+- A Convex account ([sign up free](https://convex.dev/))
+
+### Installation
+
+1. Clone the repository:
+
+```bash
+git clone <your-repo-url>
+cd clipboard
+```
+
+2. Install dependencies:
 
 ```bash
 pnpm install
+```
+
+3. Set up Convex:
+
+```bash
+pnpx convex dev
+```
+
+This will guide you through creating a Convex project and generate your deployment URL.
+
+4. Create a `.env.local` file:
+
+```bash
+VITE_CONVEX_URL=<your-convex-url>
+```
+
+### Development
+
+Run both Convex and Vite dev servers concurrently:
+
+```bash
+pnpm dev:all
+```
+
+Or run them separately:
+
+```bash
+# Terminal 1 - Convex backend
+pnpm dev:convex
+
+# Terminal 2 - Vite frontend
 pnpm dev
 ```
 
-# Building For Production
+The app will be available at `http://localhost:3000`.
 
-To build this application for production:
+## 🏗️ Building For Production
+
+Build the application:
 
 ```bash
 pnpm build
 ```
 
-## Testing
+Preview the production build locally:
 
-This project uses [Vitest](https://vitest.dev/) for testing. You can run the tests with:
+```bash
+pnpm preview
+```
+
+## 🐳 Docker Deployment
+
+### Building the Docker Image
+
+The Dockerfile uses a multi-stage build for optimal image size:
+
+```bash
+docker build \
+  --build-arg VITE_CONVEX_URL=<your-convex-url> \
+  -t clipboard-app .
+```
+
+### Running Locally with Docker
+
+```bash
+docker run -p 3000:3000 clipboard-app
+```
+
+### Deploying to Google Cloud Run
+
+1. Build and push to Google Container Registry:
+
+```bash
+# Configure gcloud
+gcloud config set project <your-project-id>
+
+# Build and push
+gcloud builds submit --tag gcr.io/<your-project-id>/clipboard
+
+# Deploy to Cloud Run
+gcloud run deploy clipboard \
+  --image gcr.io/<your-project-id>/clipboard \
+  --platform managed \
+  --region <your-region> \
+  --allow-unauthenticated \
+  --set-env-vars VITE_CONVEX_URL=<your-convex-url>
+```
+
+2. Your app will be live at the URL provided by Cloud Run!
+
+## 🧪 Testing
+
+Run the test suite:
 
 ```bash
 pnpm test
 ```
 
-## Styling
+## 🎨 Code Quality
 
-This project uses [Tailwind CSS](https://tailwindcss.com/) for styling.
-
-
-## Linting & Formatting
-
-
-This project uses [eslint](https://eslint.org/) and [prettier](https://prettier.io/) for linting and formatting. Eslint is configured using [tanstack/eslint-config](https://tanstack.com/config/latest/docs/eslint). The following scripts are available:
+### Linting
 
 ```bash
 pnpm lint
+```
+
+### Formatting
+
+```bash
 pnpm format
+```
+
+### Fix All Issues
+
+```bash
 pnpm check
 ```
 
+## 📁 Project Structure
 
+```
+clipboard/
+├── src/
+│   ├── routes/           # TanStack Router file-based routes
+│   │   ├── index.tsx     # Home page with local clipboard
+│   │   └── room.$roomId.tsx  # Shared room page
+│   ├── components/       # React components
+│   │   ├── ui/          # shadcn/ui components
+│   │   └── shadcn-space/ # Custom UI components
+│   ├── lib/             # Utility functions
+│   └── router.tsx       # Router configuration
+├── convex/              # Convex backend
+│   ├── schema.ts        # Database schema
+│   └── rooms.ts         # Room mutations & queries
+├── public/              # Static assets
+├── Dockerfile           # Multi-stage Docker build
+└── vite.config.ts       # Vite configuration
+```
 
-## Routing
-This project uses [TanStack Router](https://tanstack.com/router). The initial setup is a file based router. Which means that the routes are managed as files in `src/routes`.
+## 🔧 Routing
+
+This project uses [TanStack Router](https://tanstack.com/router) with file-based routing. Routes are managed as files in `src/routes/`.
 
 ### Adding A Route
 
-To add a new route to your application just add another a new file in the `./src/routes` directory.
+Create a new file in `./src/routes/` and TanStack Router will automatically generate the route.
 
-TanStack will automatically generate the content of the route file for you.
+## 🌟 How It Works
 
-Now that you have two routes you can use a `Link` component to navigate between them.
+### Local Clipboard
 
-### Adding Links
+- Visit the homepage to use a simple, client-side clipboard
+- Copy, paste, and clear text instantly
+- No account needed, data stays in your browser
 
-To use SPA (Single Page Application) navigation you will need to import the `Link` component from `@tanstack/react-router`.
+### Shared Rooms
 
-```tsx
-import { Link } from "@tanstack/react-router";
-```
+1. **Create a Room**: Click "Create Shared Room" on the homepage
+2. **Get Your Code**: Receive a unique 6-character invite code (e.g., `ABC123`)
+3. **Share**: Send the code or direct link to anyone
+4. **Collaborate**: All users in the room see changes in real-time
 
-Then anywhere in your JSX you can use it like so:
+### Real-time Synchronization
 
-```tsx
-<Link to="/about">About</Link>
-```
+- Powered by Convex's reactive queries
+- Changes sync instantly across all connected clients
+- 300ms debounce to prevent excessive updates while typing
+- Optimistic UI updates for smooth experience
 
-This will create a link that will navigate to the `/about` route.
+## 🔒 Environment Variables
 
-More information on the `Link` component can be found in the [Link documentation](https://tanstack.com/router/v1/docs/framework/react/api/router/linkComponent).
-
-### Using A Layout
-
-In the File Based Routing setup the layout is located in `src/routes/__root.tsx`. Anything you add to the root route will appear in all the routes. The route content will appear in the JSX where you use the `<Outlet />` component.
-
-Here is an example layout that includes a header:
-
-```tsx
-import { Outlet, createRootRoute } from '@tanstack/react-router'
-import { TanStackRouterDevtools } from '@tanstack/react-router-devtools'
-
-import { Link } from "@tanstack/react-router";
-
-export const Route = createRootRoute({
-  component: () => (
-    <>
-      <header>
-        <nav>
-          <Link to="/">Home</Link>
-          <Link to="/about">About</Link>
-        </nav>
-      </header>
-      <Outlet />
-      <TanStackRouterDevtools />
-    </>
-  ),
-})
-```
-
-The `<TanStackRouterDevtools />` component is not required so you can remove it if you don't want it in your layout.
-
-More information on layouts can be found in the [Layouts documentation](https://tanstack.com/router/latest/docs/framework/react/guide/routing-concepts#layouts).
-
-
-## Data Fetching
-
-There are multiple ways to fetch data in your application. You can use TanStack Query to fetch data from a server. But you can also use the `loader` functionality built into TanStack Router to load the data for a route before it's rendered.
-
-For example:
-
-```tsx
-const peopleRoute = createRoute({
-  getParentRoute: () => rootRoute,
-  path: "/people",
-  loader: async () => {
-    const response = await fetch("https://swapi.dev/api/people");
-    return response.json() as Promise<{
-      results: {
-        name: string;
-      }[];
-    }>;
-  },
-  component: () => {
-    const data = peopleRoute.useLoaderData();
-    return (
-      <ul>
-        {data.results.map((person) => (
-          <li key={person.name}>{person.name}</li>
-        ))}
-      </ul>
-    );
-  },
-});
-```
-
-Loaders simplify your data fetching logic dramatically. Check out more information in the [Loader documentation](https://tanstack.com/router/latest/docs/framework/react/guide/data-loading#loader-parameters).
-
-### React-Query
-
-React-Query is an excellent addition or alternative to route loading and integrating it into you application is a breeze.
-
-First add your dependencies:
+Create a `.env.local` file in the project root:
 
 ```bash
-pnpm add @tanstack/react-query @tanstack/react-query-devtools
+# Convex deployment URL
+VITE_CONVEX_URL=https://your-deployment.convex.cloud
 ```
 
-Next we'll need to create a query client and provider. We recommend putting those in `main.tsx`.
-
-```tsx
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-
-// ...
-
-const queryClient = new QueryClient();
-
-// ...
-
-if (!rootElement.innerHTML) {
-  const root = ReactDOM.createRoot(rootElement);
-
-  root.render(
-    <QueryClientProvider client={queryClient}>
-      <RouterProvider router={router} />
-    </QueryClientProvider>
-  );
-}
-```
-
-You can also add TanStack Query Devtools to the root route (optional).
-
-```tsx
-import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
-
-const rootRoute = createRootRoute({
-  component: () => (
-    <>
-      <Outlet />
-      <ReactQueryDevtools buttonPosition="top-right" />
-      <TanStackRouterDevtools />
-    </>
-  ),
-});
-```
-
-Now you can use `useQuery` to fetch your data.
-
-```tsx
-import { useQuery } from "@tanstack/react-query";
-
-import "./App.css";
-
-function App() {
-  const { data } = useQuery({
-    queryKey: ["people"],
-    queryFn: () =>
-      fetch("https://swapi.dev/api/people")
-        .then((res) => res.json())
-        .then((data) => data.results as { name: string }[]),
-    initialData: [],
-  });
-
-  return (
-    <div>
-      <ul>
-        {data.map((person) => (
-          <li key={person.name}>{person.name}</li>
-        ))}
-      </ul>
-    </div>
-  );
-}
-
-export default App;
-```
-
-You can find out everything you need to know on how to use React-Query in the [React-Query documentation](https://tanstack.com/query/latest/docs/framework/react/overview).
-
-## State Management
-
-Another common requirement for React applications is state management. There are many options for state management in React. TanStack Store provides a great starting point for your project.
-
-First you need to add TanStack Store as a dependency:
+For production builds (Docker):
 
 ```bash
-pnpm add @tanstack/store
+# Build-time variable (baked into the bundle)
+VITE_CONVEX_URL=https://your-deployment.convex.cloud
 ```
 
-Now let's create a simple counter in the `src/App.tsx` file as a demonstration.
+## 📚 Architecture
 
-```tsx
-import { useStore } from "@tanstack/react-store";
-import { Store } from "@tanstack/store";
-import "./App.css";
+### Database Schema
 
-const countStore = new Store(0);
-
-function App() {
-  const count = useStore(countStore);
-  return (
-    <div>
-      <button onClick={() => countStore.setState((n) => n + 1)}>
-        Increment - {count}
-      </button>
-    </div>
-  );
+```typescript
+rooms: {
+  inviteCode: string // 6-char uppercase code
+  content: string // shared clipboard text
+  createdAt: number // timestamp
 }
-
-export default App;
 ```
 
-One of the many nice features of TanStack Store is the ability to derive state from other state. That derived state will update when the base state updates.
+### Key Design Decisions
 
-Let's check this out by doubling the count using derived state.
+**Why Convex?**
 
-```tsx
-import { useStore } from "@tanstack/react-store";
-import { Store, Derived } from "@tanstack/store";
-import "./App.css";
+- Real-time subscriptions out of the box
+- Serverless, no infrastructure to manage
+- Type-safe queries and mutations
+- Automatic caching and reactivity
 
-const countStore = new Store(0);
+**Why TanStack Router?**
 
-const doubledStore = new Derived({
-  fn: () => countStore.state * 2,
-  deps: [countStore],
-});
-doubledStore.mount();
+- File-based routing for better DX
+- Type-safe navigation
+- Built-in code splitting
+- SEO-friendly with SSR support via TanStack Start
 
-function App() {
-  const count = useStore(countStore);
-  const doubledCount = useStore(doubledStore);
+**Why Docker + Cloud Run?**
 
-  return (
-    <div>
-      <button onClick={() => countStore.setState((n) => n + 1)}>
-        Increment - {count}
-      </button>
-      <div>Doubled - {doubledCount}</div>
-    </div>
-  );
-}
+- Consistent builds across environments
+- Easy horizontal scaling
+- Pay-per-use pricing model
+- Zero-downtime deployments
+- Global CDN integration
 
-export default App;
-```
+**Why Nitro?**
 
-We use the `Derived` class to create a new store that is derived from another store. The `Derived` class has a `mount` method that will start the derived store updating.
+- Optimized production builds
+- Automatic tree-shaking
+- Built-in caching layers
+- Universal rendering support
 
-Once we've created the derived store we can use it in the `App` component just like we would any other store using the `useStore` hook.
+## 🚀 Performance Optimizations
 
-You can find out everything you need to know on how to use TanStack Store in the [TanStack Store documentation](https://tanstack.com/store/latest).
+- **Multi-stage Docker Build**: Separates build and runtime dependencies for minimal image size
+- **Vite Build**: Lightning-fast HMR in development, optimized chunks in production
+- **Debounced Updates**: Prevents excessive backend calls while typing
+- **Tailwind JIT**: Only includes CSS classes actually used in the app
+- **Code Splitting**: Automatic route-based code splitting with TanStack Router
 
-# Demo files
+## 🤝 Contributing
 
-Files prefixed with `demo` can be safely deleted. They are there to provide a starting point for you to play around with the features you've installed.
+Contributions are welcome! Please feel free to submit a Pull Request.
 
-# Learn More
+## 📄 License
 
-You can learn more about all of the offerings from TanStack in the [TanStack documentation](https://tanstack.com).
+This project is open source and available under the [MIT License](LICENSE).
+
+## 🔗 Resources
+
+- [TanStack Router Docs](https://tanstack.com/router/latest)
+- [Convex Documentation](https://docs.convex.dev/)
+- [Google Cloud Run Docs](https://cloud.google.com/run/docs)
+- [Vite Documentation](https://vitejs.dev/)
+- [shadcn/ui](https://ui.shadcn.com/)
+
+---
+
+Built with ❤️ using modern web technologies
