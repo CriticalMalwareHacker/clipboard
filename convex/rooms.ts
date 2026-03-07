@@ -1,5 +1,5 @@
 import { v } from 'convex/values'
-import { mutation, query } from './_generated/server'
+import { mutation, query, internalMutation } from './_generated/server'
 
 // Generate a random 6-character uppercase invite code
 function generateCode(): string {
@@ -35,6 +35,7 @@ export const createRoom = mutation({
             inviteCode,
             content: '',
             createdAt: Date.now(),
+            lastActivityAt: Date.now(),
         })
 
         return { roomId, inviteCode }
@@ -72,6 +73,29 @@ export const updateContent = mutation({
         content: v.string(),
     },
     handler: async (ctx, { roomId, content }) => {
-        await ctx.db.patch(roomId, { content })
+        await ctx.db.patch(roomId, { content, lastActivityAt: Date.now() })
+    },
+})
+
+// Internal: delete rooms inactive for more than the given threshold (ms)
+export const deleteStaleRooms = internalMutation({
+    args: { thresholdMs: v.number() },
+    handler: async (ctx, { thresholdMs }) => {
+        const cutoff = Date.now() - thresholdMs
+        const stale = await ctx.db
+            .query('rooms')
+            .filter((q) =>
+                q.or(
+                    // New rows: use lastActivityAt
+                    q.lt(q.field('lastActivityAt'), cutoff),
+                    // Old rows (pre-schema): fall back to createdAt
+                    q.lt(q.field('createdAt'), cutoff),
+                ),
+            )
+            .collect()
+
+        await Promise.all(stale.map((room) => ctx.db.delete(room._id)))
+
+        console.log(`[cleanup] Deleted ${stale.length} stale room(s)`)
     },
 })

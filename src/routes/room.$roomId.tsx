@@ -111,7 +111,11 @@ function SharedRoomPage() {
     if (room === null) {
         return (
             <div className="min-h-screen bg-gray-100 flex flex-col items-center justify-center gap-4">
-                <p className="text-2xl font-bold text-gray-800">Room not found</p>
+                <div className="inline-flex items-center justify-center w-16 h-16 bg-amber-100 rounded-2xl mb-2">
+                    <span className="text-3xl">⏱</span>
+                </div>
+                <p className="text-2xl font-bold text-gray-800">Session Expired</p>
+                <p className="text-gray-500 text-sm">This room was deleted after 10 minutes of inactivity.</p>
                 <button
                     onClick={() => navigate({ to: '/' })}
                     className="flex items-center gap-2 px-5 py-2.5 bg-gray-800 text-white rounded-xl font-semibold hover:bg-gray-700 transition-all"
@@ -201,10 +205,10 @@ function SharedRoomPage() {
                             onClick={handleCopy}
                             disabled={!localText.trim()}
                             className={`flex-1 min-w-[140px] flex items-center justify-center gap-2 py-3 px-6 rounded-xl font-semibold transition-all duration-300 ${copied
-                                    ? 'bg-green-500 text-white shadow-lg shadow-green-300/40'
-                                    : localText.trim()
-                                        ? 'bg-gray-800 text-white hover:bg-gray-700 hover:shadow-lg hover:shadow-gray-400/30 hover:scale-[1.02]'
-                                        : 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                                ? 'bg-green-500 text-white shadow-lg shadow-green-300/40'
+                                : localText.trim()
+                                    ? 'bg-gray-800 text-white hover:bg-gray-700 hover:shadow-lg hover:shadow-gray-400/30 hover:scale-[1.02]'
+                                    : 'bg-gray-200 text-gray-400 cursor-not-allowed'
                                 }`}
                         >
                             {copied ? (
@@ -225,8 +229,8 @@ function SharedRoomPage() {
                             onClick={handleClear}
                             disabled={!localText}
                             className={`flex items-center justify-center gap-2 py-3 px-6 rounded-xl font-semibold transition-all duration-300 ${localText
-                                    ? 'bg-red-50 text-red-500 border border-red-200 hover:bg-red-100 hover:scale-[1.02]'
-                                    : 'bg-gray-100 text-gray-300 cursor-not-allowed'
+                                ? 'bg-red-50 text-red-500 border border-red-200 hover:bg-red-100 hover:scale-[1.02]'
+                                : 'bg-gray-100 text-gray-300 cursor-not-allowed'
                                 }`}
                         >
                             <Trash2 className="w-5 h-5" /> Clear
