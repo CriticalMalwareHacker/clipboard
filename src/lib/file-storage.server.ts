@@ -1,6 +1,5 @@
 import { createServerFn } from '@tanstack/react-start'
-import { S3Client, PutObjectCommand, GetObjectCommand } from '@aws-sdk/client-s3'
-import { getSignedUrl } from '@aws-sdk/s3-request-presigner'
+import { Storage } from '@google-cloud/storage'
 
 type UploadRequestPayload = {
     route: string
@@ -12,31 +11,25 @@ type UploadRequestPayload = {
     }>
 }
 
-function getRequiredEnv(name: string) {
-    const value = process.env[name]
-    if (!value) {
-        throw new Error('Missing required env var: ' + name)
+function getBucketName() {
+    const name = process.env['GCS_BUCKET_NAME']
+    if (!name) {
+        throw new Error('Missing required env var: GCS_BUCKET_NAME')
     }
-    return value
+    return name
 }
 
-// AWS SDK natively supports the GCP HMAC keys out of the box
-function createS3Client() {
-    return new S3Client({
-        region: 'auto',
-        endpoint: 'https://storage.googleapis.com',
-        credentials: {
-            accessKeyId: getRequiredEnv('GCS_ACCESS_KEY'),
-            secretAccessKey: getRequiredEnv('GCS_SECRET_KEY'),
-        },
-    })
+// On Cloud Run, this automatically uses Application Default Credentials
+// (the service account attached to the Cloud Run service). No keys needed.
+function createStorage() {
+    return new Storage()
 }
 
 export const createUploadSignedUrls = createServerFn({ method: 'POST' })
     .inputValidator((input: UploadRequestPayload) => input)
     .handler(async ({ data }) => {
-        const s3Client = createS3Client()
-        const bucketName = getRequiredEnv('GCS_BUCKET_NAME')
+        const bucketName = getBucketName()
+        const storage = createStorage()
         const roomId = data.metadata?.roomId
 
         if (!roomId || typeof roomId !== 'string') {
@@ -45,38 +38,47 @@ export const createUploadSignedUrls = createServerFn({ method: 'POST' })
 
         const files = await Promise.all(
             data.files.map(async (file) => {
-                const key = 'rooms/' + roomId + '/' + Date.now() + '-' + file.name.replace(/[^a-zA-Z0-9.-]/g, '_')
-                
-                const command = new PutObjectCommand({
-                    Bucket: bucketName,
-                    Key: key,
-                    ContentType: file.type || 'application/octet-stream',
-                    ContentLength: file.size,
-                })
+                const key =
+                    'rooms/' +
+                    roomId +
+                    '/' +
+                    Date.now() +
+                    '-' +
+                    file.name.replace(/[^a-zA-Z0-9.-]/g, '_')
 
-                const signedUrl = await getSignedUrl(s3Client, command, { expiresIn: 300 })
-                
+                const contentType = file.type || 'application/octet-stream'
+
+                const [signedUrl] = await storage
+                    .bucket(bucketName)
+                    .file(key)
+                    .getSignedUrl({
+                        version: 'v4',
+                        action: 'write',
+                        expires: Date.now() + 5 * 60 * 1000, // 5 minutes
+                        contentType,
+                    })
+
                 return {
                     signedUrl,
                     headers: {
-                        'Content-Type': file.type || 'application/octet-stream'
+                        'Content-Type': contentType,
                     },
                     file: {
                         name: file.name,
                         size: file.size,
-                        type: file.type || 'application/octet-stream',
+                        type: contentType,
                         objectInfo: {
                             key,
                             metadata: {},
-                        }
-                    }
+                        },
+                    },
                 }
-            })
+            }),
         )
 
         return {
             metadata: data.metadata,
-            files
+            files,
         }
     })
 
@@ -115,7 +117,11 @@ export const uploadFileToSignedUrl = createServerFn({ method: 'POST' })
             const errorText = await response.text().catch(() => '')
             console.error('Upload Error Response:', errorText)
             throw new Error(
-                'Failed to upload file: ' + response.status + ' ' + response.statusText + (errorText ? ' - ' + errorText : '')
+                'Failed to upload file: ' +
+                    response.status +
+                    ' ' +
+                    response.statusText +
+                    (errorText ? ' - ' + errorText : ''),
             )
         }
 
@@ -130,13 +136,17 @@ export const createDownloadSignedUrl = createServerFn({ method: 'POST' })
             throw new Error('key is required')
         }
 
-        const s3Client = createS3Client()
-        const command = new GetObjectCommand({
-            Bucket: getRequiredEnv('GCS_BUCKET_NAME'),
-            Key: key,
-        })
+        const bucketName = getBucketName()
+        const storage = createStorage()
 
-        const downloadUrl = await getSignedUrl(s3Client, command, { expiresIn: 3600 })
-        
+        const [downloadUrl] = await storage
+            .bucket(bucketName)
+            .file(key)
+            .getSignedUrl({
+                version: 'v4',
+                action: 'read',
+                expires: Date.now() + 60 * 60 * 1000, // 1 hour
+            })
+
         return { url: downloadUrl }
     })
