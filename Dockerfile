@@ -51,7 +51,10 @@ WORKDIR /app
 
 COPY --from=builder /app/.output ./output
 
-EXPOSE 3000
-ENV PORT=3000
+ENV PORT=8080
+EXPOSE 8080
+
+# Cloud Run needs the server bound to 0.0.0.0
+ENV NITRO_HOST=0.0.0.0
 
 CMD ["node", "./output/server/index.mjs"]
